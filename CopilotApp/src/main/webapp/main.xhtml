@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+
+<h:head>
+    <title>Главная — CopilotApp</title>
+    <link rel="stylesheet" type="text/css" href="#{request.contextPath}/css/main-style.css" />
+</h:head>
+
+<h:body>
+    <script src="../js/theme.js"></script>
+
+    <h:form> <!-- ЕДИНСТВЕННАЯ форма -->
+        <div class="main-container">
+            <div class="header">
+                <h1>Добро пожаловать, <span class="username">#{loginBean.currentUser.username}</span>!</h1>
+
+                <div class="header-actions">
+                    <p:commandButton icon="pi pi-sun"
+                                     onclick="toggleTheme(); return false;"
+                                     title="Переключить тему" />
+
+                    <h:commandButton value="Выйти"
+                                     action="#{loginBean.logout}"
+                                     styleClass="logout-btn" />
+                </div>
+            </div>
+
+            <div class="app-layout">
+                <!-- Левая панель: список чатов -->
+                <div class="sidebar">
+                    <div class="sidebar-header">
+                        <h2>Чаты</h2>
+                        <h:commandButton value="Новый чат"
+                                         onclick="PF('newChatDialog').show(); return false;"
+                                         styleClass="new-chat-btn" />
+                    </div>
+
+                    <div class="chat-list">
+                        <ui:repeat value="#{chatBean.userChats}" var="chat">
+                            <h:commandLink value="#{chat.title}"
+                                           action="#{chatBean.switchToChat(chat)}"
+                                           styleClass="chat-item #{chat.id == chatBean.currentChat.id ? 'active' : ''}" />
+                        </ui:repeat>
+                    </div>
+                </div>
+
+                <!-- Правая панель: чат -->
+                <div class="chat-area">
+                    <!-- Заголовок чата с возможностью редактирования -->
+                    <div class="chat-header">
+                        <h:outputText value="#{chatBean.currentChat.title}" rendered="#{chatBean.currentChat != null}" />
+                        <h:outputText value="Нет чата" rendered="#{chatBean.currentChat == null}" />
+                    </div>
+
+                    <div class="messages-container">
+                        <ui:repeat value="#{chatBean.messages}" var="msg">
+                            <div class="message #{msg.role == 'user' ? 'user' : 'assistant'}">
+                                <div class="message-content">#{msg.content}</div>
+                            </div>
+                        </ui:repeat>
+                    </div>
+
+                    <div class="input-form">
+                        <h:inputText value="#{chatBean.userInput}"
+                                     styleClass="message-input"
+                                     onkeypress="if (event.keyCode == 13) { document.getElementById('mainForm:sendBtn').click(); return false; }" />
+                        <h:commandButton id="sendBtn" value="Отправить"
+                                         action="#{chatBean.sendMessage}"
+                                         styleClass="send-btn" />
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Модальное окно создания чата -->
+        <p:dialog header="Новый чат"
+                  widgetVar="newChatDialog"
+                  modal="true"
+                  resizable="false"
+                  width="300">
+
+            <h:panelGrid columns="1" cellpadding="5">
+                <p:inputText value="#{chatBean.newChatTitle}"
+                             placeholder="Введите название чата"
+                             maxlength="30" />
+
+                <div style="text-align: right; margin-top: 12px;">
+                    <p:commandButton value="Отмена"
+                                     onclick="PF('newChatDialog').hide(); return false;"
+                                     styleClass="cancel-btn" />
+                    <p:commandButton value="Создать"
+                                     action="#{chatBean.createNewChat}"
+                                     oncomplete="PF('newChatDialog').hide();"
+                                     styleClass="create-btn" />
+                </div>
+            </h:panelGrid>
+        </p:dialog>
+    </h:form>
+</h:body>
+</html>

@@ -1,0 +1,5 @@
+beans/LoginBean.class
+entities/Chat.class
+entities/Message.class
+entities/User.class
+beans/ChatBean.class
