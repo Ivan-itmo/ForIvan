@@ -2,13 +2,13 @@
 package beans;
 
 import entities.User;
-import javax.enterprise.context.SessionScoped;
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.TypedQuery;
-import javax.transaction.UserTransaction;
+import jakarta.enterprise.context.SessionScoped;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.TypedQuery;
+import jakarta.transaction.UserTransaction;
 import java.io.Serializable;
 import java.util.Date;
 
@@ -82,7 +82,7 @@ public class LoginBean implements Serializable {
     public String logout() {
         currentUser = null;
         // Инвалидация сессии (опционально, но рекомендуется)
-        javax.faces.context.FacesContext.getCurrentInstance()
+        jakarta.faces.context.FacesContext.getCurrentInstance()
                 .getExternalContext()
                 .invalidateSession();
         return "start?faces-redirect=true";
@@ -90,17 +90,17 @@ public class LoginBean implements Serializable {
 
     // --- Вспомогательные методы ---
     private void addErrorMessage(String msg) {
-        javax.faces.context.FacesContext.getCurrentInstance().addMessage(
+        jakarta.faces.context.FacesContext.getCurrentInstance().addMessage(
                 null,
-                new javax.faces.application.FacesMessage(
-                        javax.faces.application.FacesMessage.SEVERITY_ERROR, msg, null
+                new jakarta.faces.application.FacesMessage(
+                        jakarta.faces.application.FacesMessage.SEVERITY_ERROR, msg, null
                 )
         );
     }
 
     private void rollbackIfNeeded() {
         try {
-            if (utx != null && utx.getStatus() == javax.transaction.Status.STATUS_ACTIVE) {
+            if (utx != null && utx.getStatus() == jakarta.transaction.Status.STATUS_ACTIVE) {
                 utx.rollback();
             }
         } catch (Exception ex) {

@@ -1,13 +1,13 @@
 package beans;
 
 import entities.*;
-import javax.enterprise.context.SessionScoped;
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.TypedQuery;
-import javax.transaction.UserTransaction;
+import jakarta.enterprise.context.SessionScoped;
+import jakarta.inject.Inject;
+import jakarta.inject.Named;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import jakarta.persistence.TypedQuery;
+import jakarta.transaction.UserTransaction;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
@@ -107,7 +107,7 @@ public class ChatBean implements Serializable {
 
     private void rollback() {
         try {
-            if (utx != null && utx.getStatus() == javax.transaction.Status.STATUS_ACTIVE) {
+            if (utx != null && utx.getStatus() == jakarta.transaction.Status.STATUS_ACTIVE) {
                 utx.rollback();
             }
         } catch (Exception ex) {
