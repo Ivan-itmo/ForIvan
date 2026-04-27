@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html">
+
+<h:head>
+    <title>Стартовая страница</title>
+    <link rel="stylesheet" type="text/css" href="#{request.contextPath}/css/start-style.css" />
+</h:head>
+
+<h:body>
+    <div class="container">
+        <h1>Гладышев Иван Станиславович, P3213, 1712</h1>
+
+        <div class="clock" id="clock"></div>
+
+        <a href="main.xhtml" class="link-button">Перейти к приложению</a>
+    </div>
+
+    <script type="text/javascript">
+        function updateClock() {
+            const now = new Date();
+            const options = {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: false
+            };
+            const formatted = now.toLocaleString('ru-RU', options).replace(',', '');
+            document.getElementById('clock').textContent = formatted;
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            updateClock();
+            setInterval(updateClock, 11000);
+        });
+    </script>
+</h:body>
+</html>

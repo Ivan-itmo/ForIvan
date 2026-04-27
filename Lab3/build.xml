@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="PrepareWeb3Ant" default="build" basedir=".">
+    <property file="build.properties"/>
+    <property environment="env"/>
+
+    <available file="${music.file}" property="music.file.exists"/>
+
+    <target name="init">
+        <mkdir dir="${dist.dir}"/>
+        <mkdir dir="${history.output.dir}"/>
+    </target>
+
+    <target name="prepare-manifest">
+        <echo message="Using manifest file ${manifest.file}"/>
+    </target>
+
+    <target name="compile" depends="init">
+        <exec executable="${gradle.command}" failonerror="true">
+            <arg value="classes"/>
+        </exec>
+    </target>
+
+    <target name="build" depends="compile,prepare-manifest">
+        <exec executable="${gradle.command}" failonerror="true">
+            <arg value="jar"/>
+        </exec>
+        <copy file="${gradle.jar.file}" tofile="${dist.jar}" overwrite="true"/>
+    </target>
+
+    <target name="clean">
+        <delete dir="${dist.dir}"/>
+        <delete dir="${history.output.dir}"/>
+        <exec executable="${gradle.command}" failonerror="false">
+            <arg value="clean"/>
+        </exec>
+    </target>
+
+    <target name="test" depends="build">
+        <exec executable="${gradle.command}" failonerror="true">
+            <arg value="test"/>
+        </exec>
+    </target>
+
+    <target name="music" depends="build,music-play,music-skip"/>
+
+    <target name="music-play" if="music.file.exists">
+        <exec executable="${music.command}" failonerror="true">
+            <arg value="${music.file}"/>
+        </exec>
+    </target>
+
+    <target name="music-skip" unless="music.file.exists">
+        <echo message="Music file ${music.file} not found; skipping playback."/>
+    </target>
+
+    <target name="history" depends="init">
+        <exec executable="/bin/sh" failonerror="true">
+            <arg value="scripts/history-check.sh"/>
+            <arg value="${basedir}"/>
+            <arg value="${git.command}"/>
+            <arg value="${gradle.command}"/>
+            <arg value="${history.worktree.dir}"/>
+            <arg value="${history.diff.file}"/>
+        </exec>
+    </target>
+</project>

@@ -1,0 +1,59 @@
+plugins {
+    id 'java'
+    id 'war'
+}
+
+group = 'org.example'
+version = '1.0-SNAPSHOT'
+buildDir = 'target'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+sourceSets {
+    main {
+        java {
+            srcDirs = ['java']
+        }
+        resources {
+            srcDirs = ['resources']
+        }
+    }
+    test {
+        java {
+            srcDirs = ['test']
+        }
+    }
+}
+
+dependencies {
+    implementation 'org.glassfish:jakarta.faces:2.3.9'
+    compileOnly 'javax.servlet:javax.servlet-api:4.0.1'
+    implementation 'org.primefaces:primefaces:14.0.0'
+    implementation 'org.hibernate:hibernate-core:5.6.15.Final'
+    implementation 'org.apache.derby:derbyclient:10.16.1.1'
+
+    testImplementation platform('org.junit:junit-bom:5.10.2')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+}
+
+tasks.named('test') {
+    useJUnitPlatform()
+}
+
+tasks.named('jar') {
+    archiveFileName = 'PrepareWeb3.jar'
+    manifest.from('MANIFEST.MF')
+}
+
+tasks.named('war') {
+    archiveFileName = 'ROOT.war'
+    webAppDirectory = file('webapp')
+}
