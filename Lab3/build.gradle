@@ -87,8 +87,13 @@ tasks.register('music', Exec) {
     description = 'Воспроизведение музыки по завершению сборки'
     dependsOn tasks.named('build')
 
+    println '\nДЗЫНЬ'
+
     commandLine buildProperties.getProperty('music.command', 'afplay'),
             buildProperties.getProperty('music.file', '/System/Library/Sounds/Glass.aiff')
+
+
+    
 }
 
 tasks.register('history', Exec) {
