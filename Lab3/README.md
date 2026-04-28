@@ -1,6 +1,6 @@
 # Lab3
 
-Сборка оформлена двумя независимыми способами: Apache Ant и Gradle.
+Apache Ant и Gradle
 
 ## Ant
 
@@ -28,3 +28,5 @@ gradle clean
 gradle music
 gradle history
 ```
+
+P.S. ошибка в java/app/Lab3Launcher.java для демонстрации команды history
