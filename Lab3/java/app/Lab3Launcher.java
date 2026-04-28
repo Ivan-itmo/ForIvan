@@ -9,4 +9,11 @@ public final class Lab3Launcher {
         System.out.println("PrepareWeb3 build artifact");
         System.out.println("Version: 1.0-SNAPSHOT");
     }
+
+
+    !!!!!АДАБУДА ЭТО САБОТАЖ АААААААААААА!!!!!
+
+
+    
+   
 }

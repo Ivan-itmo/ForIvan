@@ -1,67 +1,63 @@
 #!/bin/sh
-set -eu
+set -u
 
-repo_dir=$1
-git_cmd=$2
-ant_cmd=$3
-worktree_dir=$4
-diff_file=$5
+repo_dir="${1:-.}"
+git_cmd="${2:-git}"
+ant_cmd="${3:-ant}"
+worktree_dir="${4:-../history-worktree-ant}"
+diff_file="${5:-history-output/last-working-revision.diff}"
 
-rm -rf "$worktree_dir"
 mkdir -p "$(dirname "$diff_file")"
+rm -f "$diff_file"
+rm -rf "$worktree_dir"
 
-if (
-    cd "$repo_dir"
-    "$ant_cmd" -q compile >/dev/null 2>&1
-); then
-    printf 'HEAD is already compilable; rollback is not required.\n' >"$diff_file"
-    exit 0
-fi
+last_working_revision=""
+previous_bad_revision=""
 
-last_good=""
-next_commit=""
+for revision in $("$git_cmd" -C "$repo_dir" rev-list HEAD); do
+    echo "Проверяется ревизия $revision"
 
-for commit in $("$git_cmd" -C "$repo_dir" rev-list HEAD); do
     rm -rf "$worktree_dir"
-    "$git_cmd" -C "$repo_dir" worktree add --force --detach "$worktree_dir" "$commit" >/dev/null 2>&1
+    "$git_cmd" -C "$repo_dir" worktree prune >/dev/null 2>&1
+
+    if ! "$git_cmd" -C "$repo_dir" worktree add --detach "$worktree_dir" "$revision" >/dev/null 2>&1; then
+        echo "Не удалось создать worktree для ревизии $revision"
+        continue
+    fi
 
     if (
-        cd "$worktree_dir"
+        cd "$worktree_dir/Lab3" &&
         "$ant_cmd" -q compile >/dev/null 2>&1
     ); then
-        last_good=$commit
-        next_commit=$("$git_cmd" -C "$repo_dir" rev-list --ancestry-path --reverse "${commit}..HEAD" | head -n 1 || true)
-        "$git_cmd" -C "$repo_dir" worktree remove --force "$worktree_dir" >/dev/null 2>&1 || true
+        last_working_revision="$revision"
+        "$git_cmd" -C "$repo_dir" worktree remove --force "$worktree_dir" >/dev/null 2>&1
         break
     fi
 
-    "$git_cmd" -C "$repo_dir" worktree remove --force "$worktree_dir" >/dev/null 2>&1 || true
+    previous_bad_revision="$revision"
+
+    "$git_cmd" -C "$repo_dir" worktree remove --force "$worktree_dir" >/dev/null 2>&1
 done
 
 rm -rf "$worktree_dir"
+"$git_cmd" -C "$repo_dir" worktree prune >/dev/null 2>&1
 
-if [ -z "$last_good" ]; then
-    printf 'No compilable revision found.\n' >"$diff_file"
+if [ -z "$last_working_revision" ]; then
+    echo "Компилируемая ревизия не найдена"
+    echo "Компилируемая ревизия не найдена" > "$diff_file"
+    exit 1
+fi
+
+if [ -z "$previous_bad_revision" ]; then
+    echo "Текущая ревизия уже компилируется, rollback не требуется."
+    echo "Текущая ревизия уже компилируется, rollback не требуется." > "$diff_file"
     exit 0
 fi
 
-if [ -z "$next_commit" ]; then
-    {
-        printf 'Working revision: %s\n' "$last_good"
-        printf 'No later revision to compare.\n'
-    } >"$diff_file"
-    exit 0
-fi
+echo "Найдена последняя рабочая ревизия: $last_working_revision"
+echo "Первая нерабочая ревизия после неё: $previous_bad_revision"
+echo "Формируется diff: $diff_file"
 
-changed_files=$("$git_cmd" -C "$repo_dir" diff --name-only "$last_good" "$next_commit")
+"$git_cmd" -C "$repo_dir" diff "$last_working_revision" "$previous_bad_revision" > "$diff_file"
 
-if [ -z "$changed_files" ]; then
-    {
-        printf 'Working revision: %s\n' "$last_good"
-        printf 'Next revision: %s\n' "$next_commit"
-        printf 'No changed files detected.\n'
-    } >"$diff_file"
-    exit 0
-fi
-
-"$git_cmd" -C "$repo_dir" diff "$last_good" "$next_commit" -- $changed_files >"$diff_file"
+echo "Diff сохранён в $diff_file"
