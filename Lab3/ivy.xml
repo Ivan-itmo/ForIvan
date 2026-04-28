@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- Это менеджер зависимостей для ant, можешь посмотреть в лекции -->
+<ivy-module version="2.0">
+    <info organisation="org.example" module="PrepareWeb3"/>
+
+    <configurations>
+        <conf name="main" description="compile/runtime dependencies for project sources"/>
+        <conf name="test" extends="main" description="dependencies for tests"/>
+    </configurations>
+
+    <dependencies>
+        <dependency org="org.glassfish" name="jakarta.faces" rev="2.3.9" conf="main->default"/>
+        <dependency org="javax.servlet" name="javax.servlet-api" rev="4.0.1" conf="main->default"/>
+        <dependency org="org.primefaces" name="primefaces" rev="14.0.0" conf="main->default"/>
+        <dependency org="org.hibernate" name="hibernate-core" rev="5.6.15.Final" conf="main->default"/>
+        <dependency org="org.apache.derby" name="derbyclient" rev="10.16.1.1" conf="main->default"/>
+
+        <dependency org="org.junit.platform" name="junit-platform-console-standalone" rev="1.10.2" conf="test->default"/>
+    </dependencies>
+</ivy-module>

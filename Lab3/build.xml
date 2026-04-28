@@ -1,44 +1,112 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="PrepareWeb3Ant" default="build" basedir=".">
+<project name="PrepareWeb3Ant" default="build" basedir="." xmlns:ivy="antlib:org.apache.ivy.ant">
     <property file="build.properties"/>
     <property environment="env"/>
 
     <available file="${music.file}" property="music.file.exists"/>
 
+    <path id="main.classpath"/>
+    <path id="test.classpath"/>
+
     <target name="init">
+        <mkdir dir="${build.dir}"/>
+        <mkdir dir="${classes.dir}"/>
+        <mkdir dir="${test.classes.dir}"/>
+        <mkdir dir="${test.reports.dir}"/>
         <mkdir dir="${dist.dir}"/>
         <mkdir dir="${history.output.dir}"/>
+        <mkdir dir="${lib.dir}"/>
     </target>
 
-    <target name="prepare-manifest">
-        <echo message="Using manifest file ${manifest.file}"/>
+    <target name="download-ivy" depends="init" unless="ivy.downloaded">
+        <available file="${ivy.jar}" property="ivy.downloaded"/>
+        <get src="${ivy.url}" dest="${ivy.jar}" skipexisting="true"/>
     </target>
 
-    <target name="compile" depends="init">
-        <exec executable="${gradle.command}" failonerror="true">
-            <arg value="classes"/>
-        </exec>
+    <target name="resolve" depends="download-ivy">
+        <taskdef resource="org/apache/ivy/ant/antlib.xml" uri="antlib:org.apache.ivy.ant">
+            <classpath>
+                <pathelement location="${ivy.jar}"/>
+            </classpath>
+        </taskdef>
+
+        <ivy:retrieve conf="main" pattern="${lib.dir}/main/[artifact]-[revision](-[classifier]).[ext]"/>
+        <ivy:retrieve conf="test" pattern="${lib.dir}/test/[artifact]-[revision](-[classifier]).[ext]"/>
+
+        <path id="resolved.main.classpath">
+            <fileset dir="${lib.dir}/main" includes="*.jar"/>
+        </path>
+        <path id="resolved.test.classpath">
+            <path refid="resolved.main.classpath"/>
+            <fileset dir="${lib.dir}/test" includes="*.jar"/>
+        </path>
+    </target>
+
+    <target name="copy-resources" depends="init">
+        <copy todir="${classes.dir}" failonerror="false">
+            <fileset dir="${resources.dir}"/>
+        </copy>
+    </target>
+
+    <target name="prepare-manifest" depends="init">
+        <manifest file="${manifest.file}">
+            <attribute name="Manifest-Version" value="1.0"/>
+            <attribute name="Main-Class" value="${main.class}"/>
+            <attribute name="Implementation-Version" value="${project.version}"/>
+        </manifest>
+    </target>
+
+    <target name="compile" depends="init,resolve,copy-resources">
+        <javac srcdir="${src.dir}"
+               destdir="${classes.dir}"
+               includeantruntime="false"
+               encoding="UTF-8"
+               debug="true"
+               source="17"
+               target="17">
+            <classpath refid="resolved.main.classpath"/>
+        </javac>
     </target>
 
     <target name="build" depends="compile,prepare-manifest">
-        <exec executable="${gradle.command}" failonerror="true">
-            <arg value="jar"/>
-        </exec>
-        <copy file="${gradle.jar.file}" tofile="${dist.jar}" overwrite="true"/>
+        <jar destfile="${dist.jar}" manifest="${manifest.file}">
+            <fileset dir="${classes.dir}"/>
+        </jar>
     </target>
 
     <target name="clean">
+        <delete dir="${build.dir}"/>
         <delete dir="${dist.dir}"/>
         <delete dir="${history.output.dir}"/>
-        <exec executable="${gradle.command}" failonerror="false">
-            <arg value="clean"/>
-        </exec>
     </target>
 
-    <target name="test" depends="build">
-        <exec executable="${gradle.command}" failonerror="true">
-            <arg value="test"/>
-        </exec>
+    <target name="compile-tests" depends="build">
+        <javac srcdir="${test.src.dir}"
+               destdir="${test.classes.dir}"
+               includeantruntime="false"
+               encoding="UTF-8"
+               debug="true"
+               source="17"
+               target="17">
+            <classpath>
+                <pathelement location="${classes.dir}"/>
+                <path refid="resolved.test.classpath"/>
+            </classpath>
+        </javac>
+    </target>
+
+    <target name="test" depends="compile-tests">
+        <java classname="org.junit.platform.console.ConsoleLauncher" fork="true" failonerror="true">
+            <classpath>
+                <pathelement location="${classes.dir}"/>
+                <pathelement location="${test.classes.dir}"/>
+                <path refid="resolved.test.classpath"/>
+            </classpath>
+            <arg value="--scan-class-path"/>
+            <arg value="${classes.dir}${path.separator}${test.classes.dir}"/>
+            <arg value="--reports-dir"/>
+            <arg value="${test.reports.dir}"/>
+        </java>
     </target>
 
     <target name="music" depends="build,music-play,music-skip"/>
@@ -58,7 +126,7 @@
             <arg value="scripts/history-check.sh"/>
             <arg value="${basedir}"/>
             <arg value="${git.command}"/>
-            <arg value="${gradle.command}"/>
+            <arg value="${ant.command}"/>
             <arg value="${history.worktree.dir}"/>
             <arg value="${history.diff.file}"/>
         </exec>

@@ -1,13 +1,30 @@
 # Lab3
 
-Лабораторная работа оформлена под `Gradle + Ant`.
+Сборка оформлена двумя независимыми способами: Apache Ant и Gradle.
 
-Основные команды:
+## Ant
 
-- `gradle classes`
-- `gradle test`
-- `gradle jar`
-- `ant build`
-- `ant test`
-- `ant music`
-- `ant history`
+Команды:
+
+```bash
+ant compile
+ant build
+ant test
+ant clean
+ant music
+ant history
+```
+
+## Gradle
+
+Команды:
+
+```bash
+gradle compile
+gradle build
+gradle jar
+gradle test
+gradle clean
+gradle music
+gradle history
+```

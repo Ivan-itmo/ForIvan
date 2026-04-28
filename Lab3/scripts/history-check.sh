@@ -3,12 +3,20 @@ set -eu
 
 repo_dir=$1
 git_cmd=$2
-gradle_cmd=$3
+ant_cmd=$3
 worktree_dir=$4
 diff_file=$5
 
 rm -rf "$worktree_dir"
 mkdir -p "$(dirname "$diff_file")"
+
+if (
+    cd "$repo_dir"
+    "$ant_cmd" -q compile >/dev/null 2>&1
+); then
+    printf 'HEAD is already compilable; rollback is not required.\n' >"$diff_file"
+    exit 0
+fi
 
 last_good=""
 next_commit=""
@@ -19,7 +27,7 @@ for commit in $("$git_cmd" -C "$repo_dir" rev-list HEAD); do
 
     if (
         cd "$worktree_dir"
-        "$gradle_cmd" classes >/dev/null 2>&1
+        "$ant_cmd" -q compile >/dev/null 2>&1
     ); then
         last_good=$commit
         next_commit=$("$git_cmd" -C "$repo_dir" rev-list --ancestry-path --reverse "${commit}..HEAD" | head -n 1 || true)
@@ -40,7 +48,7 @@ fi
 if [ -z "$next_commit" ]; then
     {
         printf 'Working revision: %s\n' "$last_good"
-        printf 'HEAD is already compilable; no later revision to compare.\n'
+        printf 'No later revision to compare.\n'
     } >"$diff_file"
     exit 0
 fi
