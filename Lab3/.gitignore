@@ -1,5 +1,9 @@
 .DS_Store
 .gradle/
 target/
+build/
 dist/
 history-output/
+lib/ivy-*.jar
+lib/main/
+lib/test/
