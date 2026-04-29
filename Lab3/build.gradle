@@ -54,6 +54,33 @@ tasks.named('test') {
     useJUnitPlatform()
 }
 
+tasks.register('dance') {
+    dependsOn tasks.named('build')
+    group = 'lab3'
+    description = 'Танцующий человечек'
+
+    doLast {
+        for (int i = 0; i < 12; i++) {
+            print "\033[H\033[2J"
+            println """
+  (•_•)
+  <) )╯ BUILD
+  / \\
+"""
+            sleep(300)
+
+            print "\033[H\033[2J"
+            println """
+  (•_•)
+  ╰( (>
+   / \\
+"""
+            sleep(300)
+        }
+    }
+}
+
+
 tasks.named('jar') {
     archiveFileName = "${buildProperties.getProperty('project.name', 'PrepareWeb3')}.jar"
     manifest.from(buildProperties.getProperty('manifest.file', 'MANIFEST.MF'))
@@ -72,7 +99,10 @@ tasks.register('compile') {
 
 tasks.named('build') {
     dependsOn tasks.named('compile')
-    dependsOn tasks.named('jar')
+    //dependsOn tasks.named('jar')  
+    // а надо ли оно
+
+    // а надо ли команду build в принципе ахах
 }
 
 tasks.named('clean') {

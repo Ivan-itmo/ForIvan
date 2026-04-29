@@ -1,18 +1,32 @@
 diff --git a/Lab3/MANIFEST.MF b/Lab3/MANIFEST.MF
-index 95bf801..d0ecca2 100644
+index 95bf801..5ccce04 100644
 --- a/Lab3/MANIFEST.MF
 +++ b/Lab3/MANIFEST.MF
-@@ -1,4 +1,6 @@
+@@ -1,4 +1,4 @@
 -Manifest-Version: 1.0
 -Implementation-Version: 1.0-SNAPSHOT
 -Main-Class: app.Lab3Launcher
 -
 +Manifest-Version: 1.0
-+Ant-Version: Apache Ant 1.10.17
-+Created-By: 25.0.2 (Homebrew)
 +Main-Class: app.Lab3Launcher
 +Implementation-Version: 1.0-SNAPSHOT
 +
+diff --git a/Lab3/README.md b/Lab3/README.md
+index 1daa7ae..bd1edeb 100644
+--- a/Lab3/README.md
++++ b/Lab3/README.md
+@@ -1,6 +1,6 @@
+ # Lab3
+ 
+-Сборка оформлена через Apache Ant и Gradle
++Сборка оформлена двумя независимыми способами: Apache Ant и Gradle.
+ 
+ ## Ant
+ 
+diff --git a/Lab3/bin/main/app/Lab3Launcher.class b/Lab3/bin/main/app/Lab3Launcher.class
+new file mode 100644
+index 0000000..ab0b94d
+Binary files /dev/null and b/Lab3/bin/main/app/Lab3Launcher.class differ
 diff --git a/Lab3/build.gradle b/Lab3/build.gradle
 index 5807105..c996e17 100644
 --- a/Lab3/build.gradle
@@ -38,16 +52,165 @@ index acab6e2..caa84c3 100644
 +history.diff.file=history-output/last-working-revision.diff
 +history.worktree.dir=../history-worktree
 \ No newline at end of file
+diff --git a/Lab3/history-output/last-working-revision.diff b/Lab3/history-output/last-working-revision.diff
+new file mode 100644
+index 0000000..3e3a87e
+--- /dev/null
++++ b/Lab3/history-output/last-working-revision.diff
+@@ -0,0 +1,138 @@
++diff --git a/Lab3/MANIFEST.MF b/Lab3/MANIFEST.MF
++index 95bf801..d0ecca2 100644
++--- a/Lab3/MANIFEST.MF
+++++ b/Lab3/MANIFEST.MF
++@@ -1,4 +1,6 @@
++-Manifest-Version: 1.0
++-Implementation-Version: 1.0-SNAPSHOT
++-Main-Class: app.Lab3Launcher
++-
+++Manifest-Version: 1.0
+++Ant-Version: Apache Ant 1.10.17
+++Created-By: 25.0.2 (Homebrew)
+++Main-Class: app.Lab3Launcher
+++Implementation-Version: 1.0-SNAPSHOT
+++
++diff --git a/Lab3/build.gradle b/Lab3/build.gradle
++index 5807105..c996e17 100644
++--- a/Lab3/build.gradle
+++++ b/Lab3/build.gradle
++@@ -47,6 +47,7 @@ dependencies {
++ 
++     testImplementation platform('org.junit:junit-bom:5.10.2')
++     testImplementation 'org.junit.jupiter:junit-jupiter'
+++    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
++ }
++ 
++ tasks.named('test') {
++diff --git a/Lab3/build.properties b/Lab3/build.properties
++index acab6e2..caa84c3 100644
++--- a/Lab3/build.properties
+++++ b/Lab3/build.properties
++@@ -26,5 +26,5 @@ music.file=/System/Library/Sounds/Glass.aiff
++ git.command=git
++ ant.command=ant
++ history.output.dir=history-output
++-history.diff.file=${history.output.dir}/last-working-revision.diff
++-history.worktree.dir=${history.output.dir}/worktree
+++history.diff.file=history-output/last-working-revision.diff
+++history.worktree.dir=../history-worktree
++\ No newline at end of file
++diff --git a/Lab3/java/app/Lab3Launcher.java b/Lab3/java/app/Lab3Launcher.java
++index 648150d..4abe1cb 100644
++--- a/Lab3/java/app/Lab3Launcher.java
+++++ b/Lab3/java/app/Lab3Launcher.java
++@@ -9,4 +9,6 @@ public final class Lab3Launcher {
++         System.out.println("PrepareWeb3 build artifact");
++         System.out.println("Version: 1.0-SNAPSHOT");
++     }
+++   
+++    !!!!!АДАБУДА ЭТО САБОТАЖ АААААААААААА!!!!!
++ }
++diff --git a/Lab3/scripts/history-check-gradle.sh b/Lab3/scripts/history-check-gradle.sh
++index 7024124..2c33c60 100755
++--- a/Lab3/scripts/history-check-gradle.sh
+++++ b/Lab3/scripts/history-check-gradle.sh
++@@ -1,56 +1,62 @@
++ #!/usr/bin/env bash
++-set -eu
+++set -u
++ 
++ GRADLE_COMMAND="${GRADLE_COMMAND:-gradle}"
++ GIT_COMMAND="${GIT_COMMAND:-git}"
++ HISTORY_OUTPUT_DIR="${HISTORY_OUTPUT_DIR:-history-output}"
++ HISTORY_DIFF_FILE="${HISTORY_DIFF_FILE:-history-output/last-working-revision.diff}"
++-HISTORY_WORKTREE_DIR="${HISTORY_WORKTREE_DIR:-history-output/worktree}"
+++HISTORY_WORKTREE_DIR="${HISTORY_WORKTREE_DIR:-../history-worktree}"
++ 
++ mkdir -p "$HISTORY_OUTPUT_DIR"
++ rm -f "$HISTORY_DIFF_FILE"
+++rm -rf "$HISTORY_WORKTREE_DIR"
++ 
++-current_revision="$($GIT_COMMAND rev-parse HEAD)"
++-previous_bad_revision="$current_revision"
++ last_working_revision=""
+++previous_bad_revision=""
++ 
++-mapfile -t revisions < <($GIT_COMMAND rev-list HEAD)
+++for revision in $($GIT_COMMAND rev-list HEAD); do
+++    echo "Проверяется ревизия $revision"
++ 
++-for revision in "${revisions[@]}"; do
++     rm -rf "$HISTORY_WORKTREE_DIR"
+++    "$GIT_COMMAND" worktree prune >/dev/null 2>&1
++ 
++     if ! "$GIT_COMMAND" worktree add --detach "$HISTORY_WORKTREE_DIR" "$revision" >/dev/null 2>&1; then
++         echo "Не удалось создать worktree для ревизии $revision"
++         continue
++     fi
++ 
++-    echo "Проверяется ревизия $revision"
++-
++-    (
++-        cd "$HISTORY_WORKTREE_DIR" || exit 1
++-        "$GRADLE_COMMAND" --no-daemon clean compile
++-    )
++-
++-    status=$?
++-
++-    "$GIT_COMMAND" worktree remove --force "$HISTORY_WORKTREE_DIR" >/dev/null 2>&1
++-
++-    if [ "$status" -eq 0 ]; then
+++    if (
+++        cd "$HISTORY_WORKTREE_DIR/Lab3" &&
+++        "$GRADLE_COMMAND" --no-daemon clean compile >/dev/null 2>&1
+++    ); then
++         last_working_revision="$revision"
+++        "$GIT_COMMAND" worktree remove --force "$HISTORY_WORKTREE_DIR" >/dev/null 2>&1
++         break
++     fi
++ 
++     previous_bad_revision="$revision"
+++
+++    "$GIT_COMMAND" worktree remove --force "$HISTORY_WORKTREE_DIR" >/dev/null 2>&1
++ done
++ 
+++rm -rf "$HISTORY_WORKTREE_DIR"
+++"$GIT_COMMAND" worktree prune >/dev/null 2>&1
+++
++ if [ -z "$last_working_revision" ]; then
++     echo "Компилируемая ревизия не найдена"
++     exit 1
++ fi
++ 
+++if [ -z "$previous_bad_revision" ]; then
+++    echo "Текущая ревизия уже компилируется, rollback не требуется."
+++    echo "Текущая ревизия уже компилируется, rollback не требуется." > "$HISTORY_DIFF_FILE"
+++    exit 0
+++fi
+++
++ echo "Найдена последняя рабочая ревизия: $last_working_revision"
+++echo "Первая нерабочая ревизия после неё: $previous_bad_revision"
++ echo "Формируется diff: $HISTORY_DIFF_FILE"
++ 
++ "$GIT_COMMAND" diff "$last_working_revision" "$previous_bad_revision" > "$HISTORY_DIFF_FILE"
++ 
++-echo "Diff сохранён в $HISTORY_DIFF_FILE"
+++echo "Diff сохранён в $HISTORY_DIFF_FILE"
++\ No newline at end of file
 diff --git a/Lab3/java/app/Lab3Launcher.java b/Lab3/java/app/Lab3Launcher.java
-index 648150d..4abe1cb 100644
+index 648150d..2d3f392 100644
 --- a/Lab3/java/app/Lab3Launcher.java
 +++ b/Lab3/java/app/Lab3Launcher.java
-@@ -9,4 +9,6 @@ public final class Lab3Launcher {
+@@ -9,4 +9,11 @@ public final class Lab3Launcher {
          System.out.println("PrepareWeb3 build artifact");
          System.out.println("Version: 1.0-SNAPSHOT");
      }
-+   
++
++
 +    !!!!!АДАБУДА ЭТО САБОТАЖ АААААААААААА!!!!!
++
++
++    
++   
  }
 diff --git a/Lab3/scripts/history-check-gradle.sh b/Lab3/scripts/history-check-gradle.sh
 index 7024124..2c33c60 100755
@@ -135,4 +298,114 @@ index 7024124..2c33c60 100755
  
 -echo "Diff сохранён в $HISTORY_DIFF_FILE"
 +echo "Diff сохранён в $HISTORY_DIFF_FILE"
+\ No newline at end of file
+diff --git a/Lab3/scripts/history-check.sh b/Lab3/scripts/history-check.sh
+index 74d2ff0..9824209 100755
+--- a/Lab3/scripts/history-check.sh
++++ b/Lab3/scripts/history-check.sh
+@@ -1,67 +1,63 @@
+ #!/bin/sh
+-set -eu
++set -u
+ 
+-repo_dir=$1
+-git_cmd=$2
+-ant_cmd=$3
+-worktree_dir=$4
+-diff_file=$5
++repo_dir="${1:-.}"
++git_cmd="${2:-git}"
++ant_cmd="${3:-ant}"
++worktree_dir="${4:-../history-worktree-ant}"
++diff_file="${5:-history-output/last-working-revision.diff}"
+ 
+-rm -rf "$worktree_dir"
+ mkdir -p "$(dirname "$diff_file")"
++rm -f "$diff_file"
++rm -rf "$worktree_dir"
+ 
+-if (
+-    cd "$repo_dir"
+-    "$ant_cmd" -q compile >/dev/null 2>&1
+-); then
+-    printf 'HEAD is already compilable; rollback is not required.\n' >"$diff_file"
+-    exit 0
+-fi
++last_working_revision=""
++previous_bad_revision=""
+ 
+-last_good=""
+-next_commit=""
++for revision in $("$git_cmd" -C "$repo_dir" rev-list HEAD); do
++    echo "Проверяется ревизия $revision"
+ 
+-for commit in $("$git_cmd" -C "$repo_dir" rev-list HEAD); do
+     rm -rf "$worktree_dir"
+-    "$git_cmd" -C "$repo_dir" worktree add --force --detach "$worktree_dir" "$commit" >/dev/null 2>&1
++    "$git_cmd" -C "$repo_dir" worktree prune >/dev/null 2>&1
++
++    if ! "$git_cmd" -C "$repo_dir" worktree add --detach "$worktree_dir" "$revision" >/dev/null 2>&1; then
++        echo "Не удалось создать worktree для ревизии $revision"
++        continue
++    fi
+ 
+     if (
+-        cd "$worktree_dir"
++        cd "$worktree_dir/Lab3" &&
+         "$ant_cmd" -q compile >/dev/null 2>&1
+     ); then
+-        last_good=$commit
+-        next_commit=$("$git_cmd" -C "$repo_dir" rev-list --ancestry-path --reverse "${commit}..HEAD" | head -n 1 || true)
+-        "$git_cmd" -C "$repo_dir" worktree remove --force "$worktree_dir" >/dev/null 2>&1 || true
++        last_working_revision="$revision"
++        "$git_cmd" -C "$repo_dir" worktree remove --force "$worktree_dir" >/dev/null 2>&1
+         break
+     fi
+ 
+-    "$git_cmd" -C "$repo_dir" worktree remove --force "$worktree_dir" >/dev/null 2>&1 || true
++    previous_bad_revision="$revision"
++
++    "$git_cmd" -C "$repo_dir" worktree remove --force "$worktree_dir" >/dev/null 2>&1
+ done
+ 
+ rm -rf "$worktree_dir"
++"$git_cmd" -C "$repo_dir" worktree prune >/dev/null 2>&1
+ 
+-if [ -z "$last_good" ]; then
+-    printf 'No compilable revision found.\n' >"$diff_file"
+-    exit 0
++if [ -z "$last_working_revision" ]; then
++    echo "Компилируемая ревизия не найдена"
++    echo "Компилируемая ревизия не найдена" > "$diff_file"
++    exit 1
+ fi
+ 
+-if [ -z "$next_commit" ]; then
+-    {
+-        printf 'Working revision: %s\n' "$last_good"
+-        printf 'No later revision to compare.\n'
+-    } >"$diff_file"
++if [ -z "$previous_bad_revision" ]; then
++    echo "Текущая ревизия уже компилируется, rollback не требуется."
++    echo "Текущая ревизия уже компилируется, rollback не требуется." > "$diff_file"
+     exit 0
+ fi
+ 
+-changed_files=$("$git_cmd" -C "$repo_dir" diff --name-only "$last_good" "$next_commit")
++echo "Найдена последняя рабочая ревизия: $last_working_revision"
++echo "Первая нерабочая ревизия после неё: $previous_bad_revision"
++echo "Формируется diff: $diff_file"
+ 
+-if [ -z "$changed_files" ]; then
+-    {
+-        printf 'Working revision: %s\n' "$last_good"
+-        printf 'Next revision: %s\n' "$next_commit"
+-        printf 'No changed files detected.\n'
+-    } >"$diff_file"
+-    exit 0
+-fi
++"$git_cmd" -C "$repo_dir" diff "$last_working_revision" "$previous_bad_revision" > "$diff_file"
+ 
+-"$git_cmd" -C "$repo_dir" diff "$last_good" "$next_commit" -- $changed_files >"$diff_file"
++echo "Diff сохранён в $diff_file"
 \ No newline at end of file

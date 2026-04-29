@@ -7,3 +7,4 @@ history-output/
 lib/ivy-*.jar
 lib/main/
 lib/test/
+bin/
