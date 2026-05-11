@@ -1,0 +1,3 @@
+optimizer,accuracy,precision,recall,f1,tp,tn,fp,fn
+torch.RMSprop,0.889061,0.381381,0.933824,0.541578,127,1596,206,9
+MyRMSprop,0.889061,0.381381,0.933824,0.541578,127,1596,206,9

@@ -1,0 +1,35 @@
+Лабораторная работа 7. Задание 3
+Задача: бинарная классификация риска смерти пациента с COVID-19
+
+Строк прочитано из csv: 10000
+Строк осталось после обработки пропусков: 9691
+Класс 1 (пациент умер): 680
+Класс 0 (пациент не умер): 9011
+Количество признаков: 20
+Признаки: USMER, MEDICAL_UNIT, SEX, PATIENT_TYPE, INTUBED, PNEUMONIA, AGE, PREGNANT, DIABETES, COPD, ASTHMA, INMSUPR, HIPERTENSION, OTHER_DISEASE, CARDIOVASCULAR, OBESITY, RENAL_CHRONIC, TOBACCO, CLASIFFICATION_FINAL, ICU
+
+Режим анти-переобучения: выключен
+epochs = 25
+dropout = 0.20
+weight_decay = 0
+размер сети = 64 -> 32 -> 1
+dropout после второго скрытого слоя = нет
+
+Оптимизатор: torch.RMSprop
+accuracy = 0.8891
+precision = 0.3814
+recall = 0.9338
+f1 = 0.5416
+confusion matrix: TP=127, TN=1596, FP=206, FN=9
+
+Оптимизатор: MyRMSprop
+accuracy = 0.8891
+precision = 0.3814
+recall = 0.9338
+f1 = 0.5416
+confusion matrix: TP=127, TN=1596, FP=206, FN=9
+
+Вывод:
+По F1 алгоритмы полностью совпали!
+Если библиотечный и собственный RMSProp дают близкие значения, это означает, что собственная реализация шага оптимизатора согласуется с готовой реализацией PyTorch.
+Запуск выполнен в обычном режиме. Для включения настроек против переобучения используйте --antioverfitting.
