@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:ui="http://xmlns.jcp.org/jsf/facelets">
+
+<h:head>
+    <title>Area Checker</title>
+    <link rel="stylesheet" type="text/css" href="#{request.contextPath}/css/main-style.css" />
+</h:head>
+
+<h:body>
+    <div class="container">
+        <h1>Гладышев Иван Станиславович, P3213, 1712</h1>
+        <a href="start.xhtml" class="link-button">На главную</a>
+
+        <h:form id="mainForm">
+            <table class="layout-table">
+                <tr>
+                    <td class="form-column">
+                        <h2>Форма</h2>
+
+                        <div class="form-group">
+                            <label>X:</label>
+                            <p:spinner id="xInput" value="#{areaCheckBean.x}" min="-5" max="5" stepFactor="1"
+                                       converterMessage="X должен быть числом." />
+                        </div>
+
+                        <div class="form-group">
+                            <label>Y:</label>
+                            <h:inputText id="yInput" value="#{areaCheckBean.y}"
+                                         converterMessage="Y должен быть числом."
+                                         maxlength="6" />
+                        </div>
+
+                        <div class="form-group">
+                            <label>R:</label>
+                            <p:spinner id="rInput" value="#{areaCheckBean.r}" min="0.1" max="3.0" stepFactor="0.1"
+                                       converterMessage="R должен быть числом." />
+                        </div>
+
+                        <h:commandButton value="Проверить" action="#{areaCheckBean.checkPoint}"/>
+                    </td>
+
+                    <td class="graph-column">
+                        <h2>Область попадания</h2>
+                        <div class="graph">
+                            <canvas id="areaGraph" width="450" height="450"></canvas>
+                        </div>
+                    </td>
+                </tr>
+            </table>
+        </h:form>
+
+        <p:messages id="messages" showDetail="false" autoUpdate="true" />
+
+        <h2>Результаты</h2>
+        <h:dataTable value="#{resultsBean.results}" var="result">
+            <h:column styleClass="#{result.hit ? 'hit-cell' : 'miss-cell'}">
+                <f:facet name="header">X</f:facet>
+                #{result.x}
+            </h:column>
+            <h:column styleClass="#{result.hit ? 'hit-cell' : 'miss-cell'}">
+                <f:facet name="header">Y</f:facet>
+                #{result.y}
+            </h:column>
+            <h:column styleClass="#{result.hit ? 'hit-cell' : 'miss-cell'}">
+                <f:facet name="header">R</f:facet>
+                #{result.r}
+            </h:column>
+            <h:column styleClass="#{result.hit ? 'hit-cell' : 'miss-cell'}">
+                <f:facet name="header">Результат</f:facet>
+                #{result.hit ? 'HIT' : 'MISS'}
+            </h:column>
+            <h:column styleClass="#{result.hit ? 'hit-cell' : 'miss-cell'}">
+                <f:facet name="header">Время</f:facet>
+                #{result.timestamp}
+            </h:column>
+        </h:dataTable>
+    </div>
+
+    <script src="../js/graph.js"></script>
+    <script src="../js/graph-with-points.js"></script>
+    <script src="../js/graphclick.js"></script>
+    <script src="../js/validator.js"></script>
+
+    <script type="text/javascript">
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeGraph(#{resultsBean.lastR});
+        });
+
+        function initializeGraph(lastR) {
+            var hasResults = #{not empty resultsBean.results};
+
+            if (hasResults) {
+                var points = [];
+                <ui:repeat value="#{resultsBean.results}" var="res">
+                    points.push({
+                    x: #{res.x},
+                    y: #{res.y},
+                    r: #{res.r},
+                    hit: #{res.hit}
+                });
+                </ui:repeat>
+
+                if (points.length > 0) {
+                    drawAreaGraphWithPoints(lastR, points);
+                    return;
+                }
+            }
+            drawAreaGraph();
+        }
+    </script>
+
+</h:body>
+</html>
